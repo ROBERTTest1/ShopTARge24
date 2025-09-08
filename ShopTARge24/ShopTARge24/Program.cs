@@ -1,4 +1,5 @@
 using ShopTARge24.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
