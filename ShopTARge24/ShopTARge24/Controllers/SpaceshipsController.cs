@@ -22,10 +22,13 @@ namespace ShopTARge24.Controllers
             var result = _context.Spaceships
                 .Select(x => new SpaceshipIndexViewModel
                 {
-
+                    Id = x.Id,
+                    Name = x.Name,
+                    Classification = x.Classification,
+                    BuiltDate = x.BuiltDate
                 });
 
-            return View();
+            return View(result);
         }
     }
 }
