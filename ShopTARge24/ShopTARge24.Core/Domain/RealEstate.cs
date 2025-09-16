@@ -6,5 +6,7 @@ using System.Threading.Tasks;
 
 namespace ShopTARge24.Core.Domain
 {
-    Public class RealEstate
+    public class RealEstate
+    {
+    }
 }
