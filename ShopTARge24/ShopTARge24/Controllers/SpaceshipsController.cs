@@ -60,7 +60,15 @@ namespace ShopTARge24.Controllers
                 Crew = vm.Crew,
                 EnginePower = vm.EnginePower,
                 CreatedAt = vm.CreatedAt,
-                ModifiedAt = vm.ModifiedAt
+                ModifiedAt = vm.ModifiedAt,
+                Files = vm.Files,
+                FileToApiDtos = vm.Image
+                    .Select(x => new FileToApiDto
+                    {
+                        Id = x.ImageId,
+                        ExistingFilePath = x.Filepath,
+                        SpaceshipId = x.SpaceshipId
+                    }).ToArray()
             };
 
             var result = await _spaceshipServices.Create(dto);
