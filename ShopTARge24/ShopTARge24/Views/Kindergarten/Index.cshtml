@@ -16,29 +16,32 @@
         <thead>
             <tr>
                 <th scope="col">Nr</th>
-                <th scope="col">Name</th>
-                <th scope="col">Type</th>
-                <th scope="col">Built Date</th>
-                <th scope="col">Crew</th>
+                <th scope="col">Group Name</th>
+                <th scope="col">Kindergarten Name</th>
+                <th scope="col">Children Count</th>
+                <th scope="col">Teacher Name</th>
                 <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var kindergarten in Model)
+            @if (Model != null)
+            {
+                @foreach (var kindergarten in Model)
                 {
                     <tr>
                         <td>@rowNumber</td>
-                        <td>@kindergarten.Name</td>
-                        <td>@kindergarten.Classification</td>
-                        <td>@kindergarten.BuiltDate</td>
-                        <td>@kindergarten.Crew</td>
+                        <td>@kindergarten.GroupName</td>
+                        <td>@kindergarten.KindergartenName</td>
+                        <td>@kindergarten.ChildrenCount</td>
+                        <td>@kindergarten.TeacherName</td>
                         <td>
                             <a asp-action="details" asp-controller="Kindergarten" asp-route-id="@kindergarten.Id" class="btn btn-primary">Details</a>
                             <a asp-action="update" asp-controller="Kindergarten" asp-route-id="@kindergarten.Id" class="btn btn-primary">Update</a>
                             <a asp-action="delete" asp-controller="Kindergarten" asp-route-id="@kindergarten.Id" class="btn btn-outline-danger">Delete</a>
                         </td>
-                </tr>
-                rowNumber += 1;
+                    </tr>
+                    rowNumber += 1;
+                }
             }
         </tbody>
     </table>
