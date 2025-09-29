@@ -33,12 +33,7 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "multipleFileUpload")),
-    RequestPath = "/multipleFileUpload"
-});
+app.UseStaticFiles();
 
 app.MapControllerRoute(
     name: "default",
