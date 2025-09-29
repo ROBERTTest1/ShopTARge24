@@ -27,9 +27,9 @@ namespace ShopTARge24.ApplicationServices.Services
         {
             if (dto.Files != null && dto.Files.Count > 0)
             {
-                if (!Directory.Exists(_webHost.ContentRootPath + "wwwroot\\multipleFileUpload\\"))
+                if (!Directory.Exists(_webHost.ContentRootPath + "\\wwwroot\\multipleFileUpload\\"))
                 {
-                    Directory.CreateDirectory(_webHost.ContentRootPath + "wwwroot\\multipleFileUpload\\");
+                    Directory.CreateDirectory(_webHost.ContentRootPath + "\\wwwroot\\multipleFileUpload\\");
                 }
 
                 foreach (var file in dto.Files)
@@ -62,7 +62,7 @@ namespace ShopTARge24.ApplicationServices.Services
                 .FirstOrDefaultAsync(x => x.Id == dto.Id);
 
             //kus asuvad pildid, mida hakatakse kustutama
-            var filePath = _webHost.ContentRootPath + "\\wwwroot\\"
+            var filePath = _webHost.ContentRootPath + "\\wwwroot\\multipleFileUpload\\"
                 + imageId.ExistingFilePath;
 
             if (File.Exists(filePath))
