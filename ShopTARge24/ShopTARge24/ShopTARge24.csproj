@@ -20,7 +20,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="multipleFileUpload\" />
+    <Folder Include="wwwroot\multipleFileUpload\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\multipleFileUpload\1472be0d-dcbb-4c62-8932-1f156002a721_rocinante.jfif" />
+    <None Include="wwwroot\multipleFileUpload\270a4855-230b-492f-8f2d-ae2244543a0e_Leonidas.webp" />
+    <None Include="wwwroot\multipleFileUpload\2ec7bb78-ff5e-4031-9b4a-82800b5e0d7a_Leonidas.webp" />
+    <None Include="wwwroot\multipleFileUpload\6a597ec3-b2a0-4cc5-8c8b-1125e396ec73_rocinante.jfif" />
+    <None Include="wwwroot\multipleFileUpload\96c9aa8a-a62c-4ddf-b146-a2ceebe24313_ScipioAfricanus.jpg" />
+    <None Include="wwwroot\multipleFileUpload\b30097c2-d50f-44a7-80c9-1c9718bc20af_ScipioAfricanus.jpg" />
+    <None Include="wwwroot\multipleFileUpload\c3b8fa4d-d7d1-4834-af91-0727e3f312b2_ScipioAfricanus.jpg" />
+    <None Include="wwwroot\multipleFileUpload\d83105ba-6438-4b72-9eaf-eedf86224d17_Leonidas.webp" />
+    <None Include="wwwroot\multipleFileUpload\f57c9c1c-dd3d-4689-819c-c866357807fc_rocinante.jfif" />
   </ItemGroup>
 
 </Project>
