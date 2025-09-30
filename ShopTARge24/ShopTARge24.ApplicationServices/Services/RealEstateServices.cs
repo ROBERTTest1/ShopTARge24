@@ -1,6 +1,9 @@
-﻿namespace ShopTARge24.ApplicationServices.Services
+﻿using ShopTARge24.Core.ServiceInterface;
+
+namespace ShopTARge24.ApplicationServices.Services
 {
-    public class RealEstateServices
+    public class RealEstateServices : IRealEstateServices
     {
+
     }
 }
