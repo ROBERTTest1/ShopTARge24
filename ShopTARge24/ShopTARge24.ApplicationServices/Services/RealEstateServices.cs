@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ShopTARge24.Core.Domain;
 using ShopTARge24.Core.Dto;
 using ShopTARge24.Core.ServiceInterface;
@@ -56,7 +56,7 @@ namespace ShopTARge24.ApplicationServices.Services
             _context.RealEstates.Update(existingDomain);
             await _context.SaveChangesAsync();
 
-            return existingDomain;  
+            return existingDomain;
         }
 
         public async Task<RealEstate> DetailAsync(Guid id)
@@ -76,7 +76,6 @@ namespace ShopTARge24.ApplicationServices.Services
             {
                 return null;
             }
-
             _context.RealEstates.Remove(result);
             await _context.SaveChangesAsync();
 

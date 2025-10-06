@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShopTARge24.Data;
 
@@ -11,9 +12,11 @@ using ShopTARge24.Data;
 namespace ShopTARge24.Data.Migrations
 {
     [DbContext(typeof(ShopTARge24Context))]
-    partial class ShopTARge24ContextModelSnapshot : ModelSnapshot
+    [Migration("20250922160056_FileToApp")]
+    partial class FileToApp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,35 +40,6 @@ namespace ShopTARge24.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FileToApis");
-                });
-
-            modelBuilder.Entity("ShopTARge24.Core.Domain.RealEstate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double?>("Area")
-                        .HasColumnType("float");
-
-                    b.Property<string>("BuildingType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("RoomNumber")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("RealEstates");
                 });
 
             modelBuilder.Entity("ShopTARge24.Core.Domain.Spaceships", b =>

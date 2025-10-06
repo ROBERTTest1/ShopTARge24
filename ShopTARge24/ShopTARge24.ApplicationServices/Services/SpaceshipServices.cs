@@ -10,13 +10,16 @@ namespace ShopTARge24.ApplicationServices.Services
     public class SpaceshipServices : ISpaceshipServices
     {
         private readonly ShopTARge24Context _context;
+        private readonly IFileServices _fileServices;
 
         public SpaceshipServices
             (
-                ShopTARge24Context context
+                ShopTARge24Context context,
+                IFileServices fileServices
             )
         {
             _context = context;
+            _fileServices = fileServices;
         }
 
         public async Task<Spaceships> Create(SpaceshipDto dto)
@@ -31,6 +34,7 @@ namespace ShopTARge24.ApplicationServices.Services
             spaceships.EnginePower = dto.EnginePower;
             spaceships.CreatedAt = DateTime.Now;
             spaceships.ModifiedAt = DateTime.Now;
+            _fileServices.FilesToApi(dto, spaceships);
 
             await _context.Spaceships.AddAsync(spaceships);
             await _context.SaveChangesAsync();
@@ -51,6 +55,7 @@ namespace ShopTARge24.ApplicationServices.Services
             spaceships.EnginePower = dto.EnginePower;
             spaceships.CreatedAt = dto.CreatedAt;
             spaceships.ModifiedAt = DateTime.Now;
+            _fileServices.FilesToApi(dto, spaceships);
 
             //tuleb db-s teha andmete uuendamine jauue oleku salvestamine
             _context.Spaceships.Update(spaceships);
@@ -69,12 +74,19 @@ namespace ShopTARge24.ApplicationServices.Services
 
         public async Task<Spaceships> Delete(Guid id)
         {
-            //leida ülesse konkreetne soovitud rida, mida soovite kustutada
             var result = await _context.Spaceships
                 .FirstOrDefaultAsync(x => x.Id == id);
 
+            var images = await _context.FileToApis
+                .Where(x => x.SpaceshipId == id)
+                .Select(y => new FileToApiDto
+                {
+                    Id = y.Id,
+                    SpaceshipId = y.SpaceshipId,
+                    ExistingFilePath = y.ExistingFilePath,
+                }).ToArrayAsync();
 
-            //kui rida on leitud, siis eemaldage andmebaasist
+            await _fileServices.RemoveImagesFromApi(images);
             _context.Spaceships.Remove(result);
             await _context.SaveChangesAsync();
 

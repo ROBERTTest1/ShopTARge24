@@ -4,7 +4,6 @@ using ShopTARge24.Core.Dto;
 using ShopTARge24.Core.ServiceInterface;
 using ShopTARge24.Data;
 using ShopTARge24.Models.RealEstate;
-
 namespace ShopTARge24.Controllers
 {
     public class RealEstateController : Controller
@@ -158,7 +157,7 @@ namespace ShopTARge24.Controllers
             //kasutada service classi meetodit, et info kätte saada
             var realEstate = await _realEstateServices.DetailAsync(id);
 
-            if(realEstate == null)
+            if (realEstate == null)
             {
                 return NotFound();
             }
