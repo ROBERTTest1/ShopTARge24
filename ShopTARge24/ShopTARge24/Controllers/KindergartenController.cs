@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using System.IO;
+using System.Linq;
 using ShopTARge24.Core.Domain;
 using ShopTARge24.Core.Dto;
 using ShopTARge24.Core.ServiceInterface;
 using ShopTARge24.Data;
 using ShopTARge24.Models.Kindergarten;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace ShopTARge24.Controllers
@@ -51,17 +53,46 @@ namespace ShopTARge24.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(KindergartenCreateUpdateViewModel vm)
         {
-            if (vm.ImageFile != null && vm.ImageFile.Length > 0)
+            var uploadedImagePaths = new List<string>();
+            if (vm.ImageFiles != null && vm.ImageFiles.Any())
             {
+                // Limit to 20 files maximum
+                var filesToProcess = vm.ImageFiles.Take(20).ToList();
+                
                 var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "kindergartens");
                 Directory.CreateDirectory(uploadsFolder);
-                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(vm.ImageFile.FileName)}";
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                
+                foreach (var file in filesToProcess)
                 {
-                    await vm.ImageFile.CopyToAsync(stream);
+                    if (file != null && file.Length > 0)
+                    {
+                        // Check file size (10MB limit per file)
+                        if (file.Length > 10 * 1024 * 1024)
+                        {
+                            ModelState.AddModelError("ImageFiles", $"File {file.FileName} is too large. Maximum size is 10MB.");
+                            continue;
+                        }
+                        
+                        // Check if it's an image file
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+                        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError("ImageFiles", $"File {file.FileName} is not a supported image format.");
+                            continue;
+                        }
+                        
+                        var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                        uploadedImagePaths.Add($"/uploads/kindergartens/{uniqueFileName}");
+                    }
                 }
-                vm.ImagePath = $"/uploads/kindergartens/{uniqueFileName}";
+                // keep first as primary ImagePath for list view
+                vm.ImagePath = uploadedImagePaths.FirstOrDefault();
             }
             var dto = new KindergartenDto()
             {
@@ -71,6 +102,7 @@ namespace ShopTARge24.Controllers
                 KindergartenName = vm.KindergartenName,
                 TeacherName = vm.TeacherName,
                 ImagePath = vm.ImagePath,
+                ImagePaths = uploadedImagePaths,
                 CreatedAt = vm.CreatedAt,
                 UpdatedAt = vm.UpdatedAt
             };
@@ -103,6 +135,10 @@ namespace ShopTARge24.Controllers
             vm.KindergartenName = kindergarten.KindergartenName;
             vm.TeacherName = kindergarten.TeacherName;
             vm.ImagePath = kindergarten.ImagePath;
+            vm.ImagePaths = await _context.Set<KindergartenImage>()
+                .Where(x => x.KindergartenId == id)
+                .Select(x => x.ImagePath)
+                .ToListAsync();
             vm.CreatedAt = kindergarten.CreatedAt;
             vm.UpdatedAt = kindergarten.UpdatedAt;
 
@@ -112,26 +148,45 @@ namespace ShopTARge24.Controllers
         [HttpPost]
         public async Task<IActionResult> Update(KindergartenCreateUpdateViewModel vm)
         {
-            if (vm.ImageFile != null && vm.ImageFile.Length > 0)
+            var uploadedImagePaths = new List<string>();
+            if (vm.ImageFiles != null && vm.ImageFiles.Any())
             {
+                // Limit to 20 files maximum
+                var filesToProcess = vm.ImageFiles.Take(20).ToList();
+                
                 var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "kindergartens");
                 Directory.CreateDirectory(uploadsFolder);
-                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(vm.ImageFile.FileName)}";
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                
+                foreach (var file in filesToProcess)
                 {
-                    await vm.ImageFile.CopyToAsync(stream);
-                }
-                // delete old file if exists
-                if (!string.IsNullOrEmpty(vm.ImagePath))
-                {
-                    var oldPhysicalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", vm.ImagePath.TrimStart('/'));
-                    if (System.IO.File.Exists(oldPhysicalPath))
+                    if (file != null && file.Length > 0)
                     {
-                        System.IO.File.Delete(oldPhysicalPath);
+                        // Check file size (10MB limit per file)
+                        if (file.Length > 10 * 1024 * 1024)
+                        {
+                            ModelState.AddModelError("ImageFiles", $"File {file.FileName} is too large. Maximum size is 10MB.");
+                            continue;
+                        }
+                        
+                        // Check if it's an image file
+                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+                        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError("ImageFiles", $"File {file.FileName} is not a supported image format.");
+                            continue;
+                        }
+                        
+                        var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                        uploadedImagePaths.Add($"/uploads/kindergartens/{uniqueFileName}");
                     }
                 }
-                vm.ImagePath = $"/uploads/kindergartens/{uniqueFileName}";
+                vm.ImagePath = vm.ImagePath ?? uploadedImagePaths.FirstOrDefault();
             }
             var dto = new KindergartenDto()
             {
@@ -141,6 +196,7 @@ namespace ShopTARge24.Controllers
                 KindergartenName = vm.KindergartenName,
                 TeacherName = vm.TeacherName,
                 ImagePath = vm.ImagePath,
+                ImagePaths = uploadedImagePaths,
                 CreatedAt = vm.CreatedAt,
                 UpdatedAt = vm.UpdatedAt
             };
@@ -158,7 +214,7 @@ namespace ShopTARge24.Controllers
         [HttpGet]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var kindergarten = await _kindergartenServices.DetailAsync(id);
+            var kindergarten = await _context.Kindergartens.FirstOrDefaultAsync(x => x.Id == id);
 
             if (kindergarten == null)
             {
@@ -173,6 +229,10 @@ namespace ShopTARge24.Controllers
             vm.KindergartenName = kindergarten.KindergartenName;
             vm.TeacherName = kindergarten.TeacherName;
             vm.ImagePath = kindergarten.ImagePath;
+            vm.ImagePaths = await _context.Set<KindergartenImage>()
+                .Where(x => x.KindergartenId == id)
+                .Select(x => x.ImagePath)
+                .ToListAsync();
             vm.CreatedAt = kindergarten.CreatedAt;
             vm.UpdatedAt = kindergarten.UpdatedAt;
 
@@ -196,7 +256,7 @@ namespace ShopTARge24.Controllers
         public async Task<IActionResult> Details(Guid id)
         {
             //kasutada service classi meetodit, et info kätte saada
-            var kindergarten = await _kindergartenServices.DetailAsync(id);
+            var kindergarten = await _context.Kindergartens.FirstOrDefaultAsync(x => x.Id == id);
 
             if(kindergarten == null)
             {
@@ -214,8 +274,56 @@ namespace ShopTARge24.Controllers
             vm.ImagePath = kindergarten.ImagePath;
             vm.CreatedAt = kindergarten.CreatedAt;
             vm.UpdatedAt = kindergarten.UpdatedAt;
+            vm.ImagePath = kindergarten.ImagePath;
+            vm.ImagePaths = await _context.Set<KindergartenImage>()
+                .Where(x => x.KindergartenId == id)
+                .Select(x => x.ImagePath)
+                .ToListAsync();
 
             return View(vm);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteImage(Guid kindergartenId, string imagePath)
+        {
+            // Find and delete the image record
+            var imageRecord = await _context.Set<KindergartenImage>()
+                .FirstOrDefaultAsync(x => x.KindergartenId == kindergartenId && x.ImagePath == imagePath);
+
+            if (imageRecord != null)
+            {
+                _context.Set<KindergartenImage>().Remove(imageRecord);
+                await _context.SaveChangesAsync();
+
+                // Delete the physical file
+                var physicalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", imagePath.TrimStart('/'));
+                if (System.IO.File.Exists(physicalPath))
+                {
+                    System.IO.File.Delete(physicalPath);
+                    Console.WriteLine($"Successfully deleted file: {physicalPath}");
+                }
+                else
+                {
+                    Console.WriteLine($"File not found: {physicalPath}");
+                }
+
+                // Check if this was the primary image and update the main record
+                var kindergarten = await _context.Kindergartens.FirstOrDefaultAsync(x => x.Id == kindergartenId);
+                if (kindergarten != null && kindergarten.ImagePath == imagePath)
+                {
+                    // Get the next available image or set to null
+                    var remainingImages = await _context.Set<KindergartenImage>()
+                        .Where(x => x.KindergartenId == kindergartenId)
+                        .Select(x => x.ImagePath)
+                        .ToListAsync();
+                    
+                    kindergarten.ImagePath = remainingImages.FirstOrDefault();
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            return RedirectToAction(nameof(Update), new { id = kindergartenId });
+        }
+
     }
 }

@@ -3,6 +3,7 @@ using ShopTARge24.Core.Domain;
 using ShopTARge24.Core.Dto;
 using ShopTARge24.Core.ServiceInterface;
 using ShopTARge24.Data;
+using Microsoft.Extensions.Logging;
 
 
 namespace ShopTARge24.ApplicationServices.Services
@@ -35,6 +36,22 @@ namespace ShopTARge24.ApplicationServices.Services
             await _context.Kindergartens.AddAsync(kindergarten);
             await _context.SaveChangesAsync();
 
+            if (dto.ImagePaths != null && dto.ImagePaths.Any())
+            {
+                foreach (var path in dto.ImagePaths)
+                {
+                    var img = new KindergartenImage
+                    {
+                        Id = Guid.NewGuid(),
+                        KindergartenId = kindergarten.Id.Value,
+                        ImagePath = path,
+                        CreatedAt = DateTime.Now
+                    };
+                    await _context.AddAsync(img);
+                }
+                await _context.SaveChangesAsync();
+            }
+
             return kindergarten;
         }
 
@@ -55,6 +72,22 @@ namespace ShopTARge24.ApplicationServices.Services
             //tuleb db-s teha andmete uuendamine jauue oleku salvestamine
             _context.Kindergartens.Update(kindergarten);
             await _context.SaveChangesAsync();
+
+            if (dto.ImagePaths != null && dto.ImagePaths.Any())
+            {
+                foreach (var path in dto.ImagePaths)
+                {
+                    var img = new KindergartenImage
+                    {
+                        Id = Guid.NewGuid(),
+                        KindergartenId = kindergarten.Id.Value,
+                        ImagePath = path,
+                        CreatedAt = DateTime.Now
+                    };
+                    await _context.AddAsync(img);
+                }
+                await _context.SaveChangesAsync();
+            }
 
             return kindergarten;
         }

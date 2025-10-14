@@ -64,6 +64,23 @@
             </dl>
         }
 
+        @if (Model.ImagePaths != null && Model.ImagePaths.Any())
+        {
+            <dl class="row">
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">Gallery</label>
+                    <div class="col-sm-10">
+                        @foreach (var img in Model.ImagePaths)
+                        {
+                            <div style="display: inline-block; margin-right: 8px; margin-bottom: 8px; position: relative;">
+                                <img src="@img" alt="Gallery Image" style="max-width:120px;" />
+                            </div>
+                        }
+                    </div>
+                </div>
+            </dl>
+        }
+
         <hr />
         <a asp-action="Index" asp-controller="kindergarten" class="btn btn-danger">Back</a>
 </div>

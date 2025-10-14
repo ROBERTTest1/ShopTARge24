@@ -9,6 +9,7 @@ namespace ShopTARge24.Core.Dto
         public string? KindergartenName { get; set; }
         public string? TeacherName { get; set; }
         public string? ImagePath { get; set; }
+        public List<string>? ImagePaths { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
