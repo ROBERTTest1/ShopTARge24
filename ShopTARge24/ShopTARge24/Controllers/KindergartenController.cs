@@ -172,6 +172,7 @@ namespace ShopTARge24.Controllers
             vm.ChildrenCount = kindergarten.ChildrenCount;
             vm.KindergartenName = kindergarten.KindergartenName;
             vm.TeacherName = kindergarten.TeacherName;
+            vm.ImagePath = kindergarten.ImagePath;
             vm.CreatedAt = kindergarten.CreatedAt;
             vm.UpdatedAt = kindergarten.UpdatedAt;
 
@@ -210,6 +211,7 @@ namespace ShopTARge24.Controllers
             vm.ChildrenCount = kindergarten.ChildrenCount;
             vm.KindergartenName = kindergarten.KindergartenName;
             vm.TeacherName = kindergarten.TeacherName;
+            vm.ImagePath = kindergarten.ImagePath;
             vm.CreatedAt = kindergarten.CreatedAt;
             vm.UpdatedAt = kindergarten.UpdatedAt;
 
