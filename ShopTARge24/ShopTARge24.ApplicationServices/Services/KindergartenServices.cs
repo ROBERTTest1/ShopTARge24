@@ -28,6 +28,7 @@ namespace ShopTARge24.ApplicationServices.Services
             kindergarten.ChildrenCount = dto.ChildrenCount;
             kindergarten.KindergartenName = dto.KindergartenName;
             kindergarten.TeacherName = dto.TeacherName;
+            kindergarten.ImagePath = dto.ImagePath;
             kindergarten.CreatedAt = DateTime.Now;
             kindergarten.UpdatedAt = DateTime.Now;
 
@@ -47,6 +48,7 @@ namespace ShopTARge24.ApplicationServices.Services
             kindergarten.ChildrenCount = dto.ChildrenCount;
             kindergarten.KindergartenName = dto.KindergartenName;
             kindergarten.TeacherName = dto.TeacherName;
+            kindergarten.ImagePath = dto.ImagePath;
             kindergarten.CreatedAt = dto.CreatedAt;
             kindergarten.UpdatedAt = DateTime.Now;
 

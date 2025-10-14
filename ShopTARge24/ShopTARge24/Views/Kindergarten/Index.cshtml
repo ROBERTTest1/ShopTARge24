@@ -20,6 +20,7 @@
                 <th scope="col">Kindergarten Name</th>
                 <th scope="col">Children Count</th>
                 <th scope="col">Teacher Name</th>
+                <th scope="col">Image</th>
                 <th scope="col"></th>
             </tr>
         </thead>
@@ -34,6 +35,12 @@
                         <td>@kindergarten.KindergartenName</td>
                         <td>@kindergarten.ChildrenCount</td>
                         <td>@kindergarten.TeacherName</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(kindergarten.ImagePath))
+                            {
+                                <img src="@kindergarten.ImagePath" alt="Image" style="max-width:80px" />
+                            }
+                        </td>
                         <td>
                             <a asp-action="details" asp-controller="Kindergarten" asp-route-id="@kindergarten.Id" class="btn btn-primary">Details</a>
                             <a asp-action="update" asp-controller="Kindergarten" asp-route-id="@kindergarten.Id" class="btn btn-primary">Update</a>

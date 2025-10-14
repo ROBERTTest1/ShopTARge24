@@ -54,6 +54,16 @@
             </div>
         </dl>
 
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <dl class="row">
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">Image</label>
+                    <img src="@Model.ImagePath" alt="Kindergarten Image" style="max-width:200px" />
+                </div>
+            </dl>
+        }
+
         <hr />
         <a asp-action="Index" asp-controller="kindergarten" class="btn btn-danger">Back</a>
 </div>

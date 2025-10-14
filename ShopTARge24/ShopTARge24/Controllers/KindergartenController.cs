@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
 using ShopTARge24.Core.Domain;
 using ShopTARge24.Core.Dto;
 using ShopTARge24.Core.ServiceInterface;
@@ -33,6 +34,7 @@ namespace ShopTARge24.Controllers
                     KindergartenName = x.KindergartenName,
                     ChildrenCount = x.ChildrenCount,
                     TeacherName = x.TeacherName,
+                    ImagePath = x.ImagePath,
                 });
 
             return View(result);
@@ -49,6 +51,18 @@ namespace ShopTARge24.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(KindergartenCreateUpdateViewModel vm)
         {
+            if (vm.ImageFile != null && vm.ImageFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "kindergartens");
+                Directory.CreateDirectory(uploadsFolder);
+                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(vm.ImageFile.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await vm.ImageFile.CopyToAsync(stream);
+                }
+                vm.ImagePath = $"/uploads/kindergartens/{uniqueFileName}";
+            }
             var dto = new KindergartenDto()
             {
                 Id = vm.Id,
@@ -56,6 +70,7 @@ namespace ShopTARge24.Controllers
                 ChildrenCount = vm.ChildrenCount,
                 KindergartenName = vm.KindergartenName,
                 TeacherName = vm.TeacherName,
+                ImagePath = vm.ImagePath,
                 CreatedAt = vm.CreatedAt,
                 UpdatedAt = vm.UpdatedAt
             };
@@ -87,6 +102,7 @@ namespace ShopTARge24.Controllers
             vm.ChildrenCount = kindergarten.ChildrenCount;
             vm.KindergartenName = kindergarten.KindergartenName;
             vm.TeacherName = kindergarten.TeacherName;
+            vm.ImagePath = kindergarten.ImagePath;
             vm.CreatedAt = kindergarten.CreatedAt;
             vm.UpdatedAt = kindergarten.UpdatedAt;
 
@@ -96,6 +112,27 @@ namespace ShopTARge24.Controllers
         [HttpPost]
         public async Task<IActionResult> Update(KindergartenCreateUpdateViewModel vm)
         {
+            if (vm.ImageFile != null && vm.ImageFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "kindergartens");
+                Directory.CreateDirectory(uploadsFolder);
+                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(vm.ImageFile.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await vm.ImageFile.CopyToAsync(stream);
+                }
+                // delete old file if exists
+                if (!string.IsNullOrEmpty(vm.ImagePath))
+                {
+                    var oldPhysicalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", vm.ImagePath.TrimStart('/'));
+                    if (System.IO.File.Exists(oldPhysicalPath))
+                    {
+                        System.IO.File.Delete(oldPhysicalPath);
+                    }
+                }
+                vm.ImagePath = $"/uploads/kindergartens/{uniqueFileName}";
+            }
             var dto = new KindergartenDto()
             {
                 Id = vm.Id,
@@ -103,6 +140,7 @@ namespace ShopTARge24.Controllers
                 ChildrenCount = vm.ChildrenCount,
                 KindergartenName = vm.KindergartenName,
                 TeacherName = vm.TeacherName,
+                ImagePath = vm.ImagePath,
                 CreatedAt = vm.CreatedAt,
                 UpdatedAt = vm.UpdatedAt
             };
