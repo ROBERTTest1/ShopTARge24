@@ -36,58 +36,28 @@ namespace ShopTARge24.ApplicationServices.Services
             await _context.Kindergartens.AddAsync(kindergarten);
             await _context.SaveChangesAsync();
 
-            if (dto.ImagePaths != null && dto.ImagePaths.Any())
-            {
-                foreach (var path in dto.ImagePaths)
-                {
-                    var img = new KindergartenImage
-                    {
-                        Id = Guid.NewGuid(),
-                        KindergartenId = kindergarten.Id.Value,
-                        ImagePath = path,
-                        CreatedAt = DateTime.Now
-                    };
-                    await _context.AddAsync(img);
-                }
-                await _context.SaveChangesAsync();
-            }
-
             return kindergarten;
         }
 
         public async Task<Kindergarten> Update(KindergartenDto dto)
         {
-            //vaja leida doamini objekt, mida saaks mappida dto-ga
-            Kindergarten kindergarten = new Kindergarten();
+            // Find the existing kindergarten
+            var kindergarten = await _context.Kindergartens.FirstOrDefaultAsync(x => x.Id == dto.Id);
+            if (kindergarten == null)
+            {
+                return null;
+            }
 
-            kindergarten.Id = dto.Id;
+            // Update the existing kindergarten
             kindergarten.GroupName = dto.GroupName;
             kindergarten.ChildrenCount = dto.ChildrenCount;
             kindergarten.KindergartenName = dto.KindergartenName;
             kindergarten.TeacherName = dto.TeacherName;
             kindergarten.ImagePath = dto.ImagePath;
-            kindergarten.CreatedAt = dto.CreatedAt;
             kindergarten.UpdatedAt = DateTime.Now;
 
-            //tuleb db-s teha andmete uuendamine jauue oleku salvestamine
-            _context.Kindergartens.Update(kindergarten);
+            // Save the changes
             await _context.SaveChangesAsync();
-
-            if (dto.ImagePaths != null && dto.ImagePaths.Any())
-            {
-                foreach (var path in dto.ImagePaths)
-                {
-                    var img = new KindergartenImage
-                    {
-                        Id = Guid.NewGuid(),
-                        KindergartenId = kindergarten.Id.Value,
-                        ImagePath = path,
-                        CreatedAt = DateTime.Now
-                    };
-                    await _context.AddAsync(img);
-                }
-                await _context.SaveChangesAsync();
-            }
 
             return kindergarten;
         }

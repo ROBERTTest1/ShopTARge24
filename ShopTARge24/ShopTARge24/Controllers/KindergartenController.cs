@@ -15,15 +15,18 @@ namespace ShopTARge24.Controllers
     {
         private readonly ShopTARge24Context _context;
         private readonly IKindergartenServices _kindergartenServices;
+        private readonly IFileServices _fileServices;
 
         public KindergartenController
             (
                 ShopTARge24Context context,
-                IKindergartenServices kindergartenServices
+                IKindergartenServices kindergartenServices,
+                IFileServices fileServices
             )
         {
             _context = context;
             _kindergartenServices = kindergartenServices;
+            _fileServices = fileServices;
         }
 
         public IActionResult Index()
@@ -53,47 +56,6 @@ namespace ShopTARge24.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(KindergartenCreateUpdateViewModel vm)
         {
-            var uploadedImagePaths = new List<string>();
-            if (vm.ImageFiles != null && vm.ImageFiles.Any())
-            {
-                // Limit to 20 files maximum
-                var filesToProcess = vm.ImageFiles.Take(20).ToList();
-                
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "kindergartens");
-                Directory.CreateDirectory(uploadsFolder);
-                
-                foreach (var file in filesToProcess)
-                {
-                    if (file != null && file.Length > 0)
-                    {
-                        // Check file size (10MB limit per file)
-                        if (file.Length > 10 * 1024 * 1024)
-                        {
-                            ModelState.AddModelError("ImageFiles", $"File {file.FileName} is too large. Maximum size is 10MB.");
-                            continue;
-                        }
-                        
-                        // Check if it's an image file
-                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-                        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                        if (!allowedExtensions.Contains(fileExtension))
-                        {
-                            ModelState.AddModelError("ImageFiles", $"File {file.FileName} is not a supported image format.");
-                            continue;
-                        }
-                        
-                        var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
-                        uploadedImagePaths.Add($"/uploads/kindergartens/{uniqueFileName}");
-                    }
-                }
-                // keep first as primary ImagePath for list view
-                vm.ImagePath = uploadedImagePaths.FirstOrDefault();
-            }
             var dto = new KindergartenDto()
             {
                 Id = vm.Id,
@@ -101,8 +63,7 @@ namespace ShopTARge24.Controllers
                 ChildrenCount = vm.ChildrenCount,
                 KindergartenName = vm.KindergartenName,
                 TeacherName = vm.TeacherName,
-                ImagePath = vm.ImagePath,
-                ImagePaths = uploadedImagePaths,
+                Files = vm.ImageFiles,
                 CreatedAt = vm.CreatedAt,
                 UpdatedAt = vm.UpdatedAt
             };
@@ -113,6 +74,9 @@ namespace ShopTARge24.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
+
+            // Use FileServices to handle file uploads
+            await _fileServices.FilesToApi(dto, result);
 
             return RedirectToAction(nameof(Index));
         }
@@ -148,46 +112,24 @@ namespace ShopTARge24.Controllers
         [HttpPost]
         public async Task<IActionResult> Update(KindergartenCreateUpdateViewModel vm)
         {
-            var uploadedImagePaths = new List<string>();
-            if (vm.ImageFiles != null && vm.ImageFiles.Any())
+            if (!ModelState.IsValid)
             {
-                // Limit to 20 files maximum
-                var filesToProcess = vm.ImageFiles.Take(20).ToList();
-                
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "kindergartens");
-                Directory.CreateDirectory(uploadsFolder);
-                
-                foreach (var file in filesToProcess)
+                // Reload existing data when validation fails
+                if (vm.Id.HasValue)
                 {
-                    if (file != null && file.Length > 0)
+                    var kindergarten = await _kindergartenServices.DetailAsync(vm.Id.Value);
+                    if (kindergarten != null)
                     {
-                        // Check file size (10MB limit per file)
-                        if (file.Length > 10 * 1024 * 1024)
-                        {
-                            ModelState.AddModelError("ImageFiles", $"File {file.FileName} is too large. Maximum size is 10MB.");
-                            continue;
-                        }
-                        
-                        // Check if it's an image file
-                        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-                        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                        if (!allowedExtensions.Contains(fileExtension))
-                        {
-                            ModelState.AddModelError("ImageFiles", $"File {file.FileName} is not a supported image format.");
-                            continue;
-                        }
-                        
-                        var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
-                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
-                        uploadedImagePaths.Add($"/uploads/kindergartens/{uniqueFileName}");
+                        vm.ImagePath = kindergarten.ImagePath;
+                        vm.ImagePaths = await _context.Set<KindergartenImage>()
+                            .Where(x => x.KindergartenId == vm.Id.Value)
+                            .Select(x => x.ImagePath)
+                            .ToListAsync();
                     }
                 }
-                vm.ImagePath = vm.ImagePath ?? uploadedImagePaths.FirstOrDefault();
+                return View("CreateUpdate", vm);
             }
+
             var dto = new KindergartenDto()
             {
                 Id = vm.Id,
@@ -195,10 +137,9 @@ namespace ShopTARge24.Controllers
                 ChildrenCount = vm.ChildrenCount,
                 KindergartenName = vm.KindergartenName,
                 TeacherName = vm.TeacherName,
-                ImagePath = vm.ImagePath,
-                ImagePaths = uploadedImagePaths,
+                Files = vm.ImageFiles,
                 CreatedAt = vm.CreatedAt,
-                UpdatedAt = vm.UpdatedAt
+                UpdatedAt = DateTime.Now
             };
 
             var result = await _kindergartenServices.Update(dto);
@@ -207,6 +148,9 @@ namespace ShopTARge24.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
+
+            // Use FileServices to handle file uploads
+            await _fileServices.FilesToApi(dto, result);
 
             return RedirectToAction(nameof(Index));
         }

@@ -1,4 +1,6 @@
 
+using Microsoft.AspNetCore.Http;
+
 namespace ShopTARge24.Core.Dto
 {
     public class KindergartenDto
@@ -10,6 +12,7 @@ namespace ShopTARge24.Core.Dto
         public string? TeacherName { get; set; }
         public string? ImagePath { get; set; }
         public List<string>? ImagePaths { get; set; }
+        public List<IFormFile>? Files { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
