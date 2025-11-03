@@ -53,10 +53,15 @@ namespace ShopTARge24.ApplicationServices.Services
             kindergarten.ChildrenCount = dto.ChildrenCount;
             kindergarten.KindergartenName = dto.KindergartenName;
             kindergarten.TeacherName = dto.TeacherName;
-            kindergarten.ImagePath = dto.ImagePath;
+            // Preserve existing image if none provided via DTO (image updates are handled by FileServices)
+            if (!string.IsNullOrWhiteSpace(dto.ImagePath))
+            {
+                kindergarten.ImagePath = dto.ImagePath;
+            }
             kindergarten.UpdatedAt = DateTime.Now;
 
-            // Save the changes
+            // Save the changes (force track as modified to avoid silent no-op)
+            _context.Entry(kindergarten).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
             return kindergarten;
@@ -78,8 +83,34 @@ namespace ShopTARge24.ApplicationServices.Services
 
 
             //kui rida on leitud, siis eemaldage andmebaasist
-            _context.Kindergartens.Remove(result);
-            await _context.SaveChangesAsync();
+            if (result != null)
+            {
+                // Delete images from FileToApis table
+                var fileToApiImages = await _context.FileToApis
+                    .Where(x => x.KindergartenId == id)
+                    .ToListAsync();
+                
+                if (fileToApiImages.Any())
+                {
+                    _context.FileToApis.RemoveRange(fileToApiImages);
+                }
+
+                // Delete images from KindergartenImages table (legacy)
+                var kindergartenImages = await _context.Set<KindergartenImage>()
+                    .Where(x => x.KindergartenId == id)
+                    .ToListAsync();
+                
+                if (kindergartenImages.Any())
+                {
+                    _context.Set<KindergartenImage>().RemoveRange(kindergartenImages);
+                }
+
+                // Delete the kindergarten itself
+                _context.Kindergartens.Remove(result);
+                
+                // Save all changes in one transaction
+                await _context.SaveChangesAsync();
+            }
 
             return result;
         }

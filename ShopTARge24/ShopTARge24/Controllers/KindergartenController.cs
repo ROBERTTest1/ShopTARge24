@@ -99,10 +99,6 @@ namespace ShopTARge24.Controllers
             vm.KindergartenName = kindergarten.KindergartenName;
             vm.TeacherName = kindergarten.TeacherName;
             vm.ImagePath = kindergarten.ImagePath;
-            vm.ImagePaths = await _context.Set<KindergartenImage>()
-                .Where(x => x.KindergartenId == id)
-                .Select(x => x.ImagePath)
-                .ToListAsync();
             vm.CreatedAt = kindergarten.CreatedAt;
             vm.UpdatedAt = kindergarten.UpdatedAt;
 
@@ -121,10 +117,6 @@ namespace ShopTARge24.Controllers
                     if (kindergarten != null)
                     {
                         vm.ImagePath = kindergarten.ImagePath;
-                        vm.ImagePaths = await _context.Set<KindergartenImage>()
-                            .Where(x => x.KindergartenId == vm.Id.Value)
-                            .Select(x => x.ImagePath)
-                            .ToListAsync();
                     }
                 }
                 return View("CreateUpdate", vm);
@@ -173,10 +165,6 @@ namespace ShopTARge24.Controllers
             vm.KindergartenName = kindergarten.KindergartenName;
             vm.TeacherName = kindergarten.TeacherName;
             vm.ImagePath = kindergarten.ImagePath;
-            vm.ImagePaths = await _context.Set<KindergartenImage>()
-                .Where(x => x.KindergartenId == id)
-                .Select(x => x.ImagePath)
-                .ToListAsync();
             vm.CreatedAt = kindergarten.CreatedAt;
             vm.UpdatedAt = kindergarten.UpdatedAt;
 
@@ -219,54 +207,8 @@ namespace ShopTARge24.Controllers
             vm.CreatedAt = kindergarten.CreatedAt;
             vm.UpdatedAt = kindergarten.UpdatedAt;
             vm.ImagePath = kindergarten.ImagePath;
-            vm.ImagePaths = await _context.Set<KindergartenImage>()
-                .Where(x => x.KindergartenId == id)
-                .Select(x => x.ImagePath)
-                .ToListAsync();
 
             return View(vm);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteImage(Guid kindergartenId, string imagePath)
-        {
-            // Find and delete the image record
-            var imageRecord = await _context.Set<KindergartenImage>()
-                .FirstOrDefaultAsync(x => x.KindergartenId == kindergartenId && x.ImagePath == imagePath);
-
-            if (imageRecord != null)
-            {
-                _context.Set<KindergartenImage>().Remove(imageRecord);
-                await _context.SaveChangesAsync();
-
-                // Delete the physical file
-                var physicalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", imagePath.TrimStart('/'));
-                if (System.IO.File.Exists(physicalPath))
-                {
-                    System.IO.File.Delete(physicalPath);
-                    Console.WriteLine($"Successfully deleted file: {physicalPath}");
-                }
-                else
-                {
-                    Console.WriteLine($"File not found: {physicalPath}");
-                }
-
-                // Check if this was the primary image and update the main record
-                var kindergarten = await _context.Kindergartens.FirstOrDefaultAsync(x => x.Id == kindergartenId);
-                if (kindergarten != null && kindergarten.ImagePath == imagePath)
-                {
-                    // Get the next available image or set to null
-                    var remainingImages = await _context.Set<KindergartenImage>()
-                        .Where(x => x.KindergartenId == kindergartenId)
-                        .Select(x => x.ImagePath)
-                        .ToListAsync();
-                    
-                    kindergarten.ImagePath = remainingImages.FirstOrDefault();
-                    await _context.SaveChangesAsync();
-                }
-            }
-
-            return RedirectToAction(nameof(Update), new { id = kindergartenId });
         }
 
     }
