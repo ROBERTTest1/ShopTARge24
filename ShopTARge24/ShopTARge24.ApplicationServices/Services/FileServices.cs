@@ -109,40 +109,43 @@ namespace ShopTARge24.ApplicationServices.Services
         {
             if (dto.Files != null && dto.Files.Count > 0)
             {
-                string uploadDir = Path.Combine(_webHost.ContentRootPath, "wwwroot", "multipleFileUpload");
-
-                if (!Directory.Exists(uploadDir))
+                // Remove existing images for this kindergarten
+                var existingImages = await _context.FileToApis
+                    .Where(x => x.KindergartenId == domain.Id)
+                    .ToListAsync();
+                
+                if (existingImages.Any())
                 {
-                    Directory.CreateDirectory(uploadDir);
+                    _context.FileToApis.RemoveRange(existingImages);
                 }
 
-                foreach (var file in dto.Files)
+                // Take only the first file
+                var file = dto.Files.First();
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+
+                byte[] imageData;
+                using (var memoryStream = new MemoryStream())
                 {
-                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
-                    string filePath = Path.Combine(uploadDir, uniqueFileName);
+                    await file.CopyToAsync(memoryStream);
+                    imageData = memoryStream.ToArray();
+                }
 
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(fileStream);
-                    }
+                var path = new FileToApi
+                {
+                    Id = Guid.NewGuid(),
+                    ExistingFilePath = uniqueFileName,
+                    KindergartenId = domain.Id,
+                    ImageData = imageData,
+                    ImageTitle = file.FileName
+                };
 
-                    byte[] imageData;
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await file.CopyToAsync(memoryStream);
-                        imageData = memoryStream.ToArray();
-                    }
+                await _context.FileToApis.AddAsync(path);
 
-                    var path = new FileToApi
-                    {
-                        Id = Guid.NewGuid(),
-                        ExistingFilePath = uniqueFileName,
-                        KindergartenId = domain.Id,
-                        ImageData = imageData,
-                        ImageTitle = file.FileName
-                    };
-
-                    await _context.FileToApis.AddAsync(path);
+                // Update kindergarten ImagePath
+                var kg = await _context.Kindergartens.FirstOrDefaultAsync(x => x.Id == domain.Id);
+                if (kg != null)
+                {
+                    kg.ImagePath = $"/files/api/{path.Id}";
                 }
 
                 await _context.SaveChangesAsync();
