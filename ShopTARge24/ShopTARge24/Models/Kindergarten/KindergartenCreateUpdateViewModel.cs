@@ -12,6 +12,8 @@ namespace ShopTARge24.Models.Kindergarten
         public string? TeacherName { get; set; }
         public string? ImagePath { get; set; }
         public List<string>? ImagePaths { get; set; }
+        public List<Guid>? ImageIds { get; set; }
+        public List<string>? ImageTitles { get; set; }
         public List<IFormFile>? ImageFiles { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

@@ -47,20 +47,38 @@ else
         <div class="form-group row">
             <label class="col-sm-2 col-form-label">Image</label>
             <div class="col-sm-10">
-                <input asp-for="ImageFiles" class="form-control" type="file" accept="image/*" id="imageFiles" />
+                <input asp-for="ImageFiles" class="form-control" type="file" accept="image/*" id="imageFiles" multiple />
+                <small class="form-text text-muted">You can select up to 3 images.</small>
                 <div id="fileList" class="mt-2"></div>
                 
             </div>
         </div>
 
-        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        @if (Model.ImageIds != null && Model.ImageIds.Any())
         {
             <div class="form-group row">
-                <label class="col-sm-2 col-form-label">Current Image</label>
+                <label class="col-sm-2 col-form-label">Current Images</label>
                 <div class="col-sm-10">
-                    <div style="display: inline-block; position: relative;">
-                        <img src="@Model.ImagePath" alt="Kindergarten Image" style="max-width:200px" />
-                        
+                    <div class="d-flex flex-wrap" style="gap:12px;">
+                        @for (int i = 0; i < Model.ImageIds.Count; i++)
+                        {
+                            var imgId = Model.ImageIds[i];
+                            var imgUrl = Model.ImagePaths != null && Model.ImagePaths.Count > i ? Model.ImagePaths[i] : $"/files/api/{imgId}";
+                            var title = Model.ImageTitles != null && Model.ImageTitles.Count > i ? Model.ImageTitles[i] : "Image";
+                            <div style="position: relative; display: inline-block;">
+                                <img src="@imgUrl" alt="@title" style="max-width:200px; border:1px solid #ddd; padding:2px; border-radius:4px;" />
+                                <button type="submit"
+                                        class="btn btn-sm btn-danger"
+                                        formmethod="post"
+                                        formaction="@Url.Action("DeleteImage", "Kindergarten")"
+                                        name="imageId"
+                                        value="@imgId"
+                                        onclick="return confirm('Delete this image?')"
+                                        style="position: absolute; top: 4px; right: 4px; font-size: 12px; padding: 2px 6px;">
+                                    ×
+                                </button>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -82,6 +100,20 @@ else
 </div>
 
 <script>
+// ensure kindergartenId is posted when deleting image via button override
+document.addEventListener('click', function (e) {
+    if (e.target && e.target.matches('button[formaction*="DeleteImage"]')) {
+        // add hidden kindergartenId to the form before submit
+        const form = e.target.form;
+        if (form && !form.querySelector('input[name="kindergartenId"]')) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'kindergartenId';
+            input.value = document.querySelector('input[name="Id"]').value;
+            form.appendChild(input);
+        }
+    }
+});
 document.getElementById('imageFiles').addEventListener('change', function(e) {
     const fileList = document.getElementById('fileList');
     fileList.innerHTML = '';
@@ -112,16 +144,16 @@ document.getElementById('imageFiles').addEventListener('change', function(e) {
         totalSizeInfo.className = 'text-info small mt-1';
         fileList.appendChild(totalSizeInfo);
         
-        if (e.target.files.length > 20) {
+        if (e.target.files.length > 3) {
             const warning = document.createElement('div');
-            warning.textContent = 'Warning: You have selected more than 20 files. Only the first 20 will be uploaded.';
+            warning.textContent = 'Warning: You selected more than 3 files. Only the first 3 will be uploaded.';
             warning.className = 'text-warning small mt-1';
             fileList.appendChild(warning);
         }
         
-        if (totalSize > 200 * 1024 * 1024) { // 200MB total
+        if (totalSize > 30 * 1024 * 1024) { // ~30MB total
             const warning = document.createElement('div');
-            warning.textContent = 'Warning: Total file size is very large. Upload may take a long time.';
+            warning.textContent = 'Warning: Total file size is large. Upload may take a long time.';
             warning.className = 'text-warning small mt-1';
             fileList.appendChild(warning);
         }

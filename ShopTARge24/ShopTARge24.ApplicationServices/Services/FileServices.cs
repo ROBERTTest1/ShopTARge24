@@ -109,43 +109,58 @@ namespace ShopTARge24.ApplicationServices.Services
         {
             if (dto.Files != null && dto.Files.Count > 0)
             {
-                // Remove existing images for this kindergarten
+                // Load existing images and keep them; add new ones up to a max of 3 total
                 var existingImages = await _context.FileToApis
                     .Where(x => x.KindergartenId == domain.Id)
+                    .OrderBy(x => x.CreatedAt)
                     .ToListAsync();
-                
-                if (existingImages.Any())
+
+                int existingCount = existingImages.Count;
+                int capacityLeft = Math.Max(0, 3 - existingCount);
+                if (capacityLeft == 0)
                 {
-                    _context.FileToApis.RemoveRange(existingImages);
+                    // already at capacity; nothing to add
+                    return;
                 }
 
-                // Take only the first file
-                var file = dto.Files.First();
-                string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                var filesToAppend = dto.Files.Take(capacityLeft).ToList();
 
-                byte[] imageData;
-                using (var memoryStream = new MemoryStream())
+                foreach (var file in filesToAppend)
                 {
-                    await file.CopyToAsync(memoryStream);
-                    imageData = memoryStream.ToArray();
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+
+                    byte[] imageData;
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await file.CopyToAsync(memoryStream);
+                        imageData = memoryStream.ToArray();
+                    }
+
+                    var imageEntity = new FileToApi
+                    {
+                        Id = Guid.NewGuid(),
+                        ExistingFilePath = uniqueFileName,
+                        KindergartenId = domain.Id,
+                        ImageData = imageData,
+                        ImageTitle = file.FileName,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _context.FileToApis.AddAsync(imageEntity);
                 }
 
-                var path = new FileToApi
-                {
-                    Id = Guid.NewGuid(),
-                    ExistingFilePath = uniqueFileName,
-                    KindergartenId = domain.Id,
-                    ImageData = imageData,
-                    ImageTitle = file.FileName
-                };
-
-                await _context.FileToApis.AddAsync(path);
-
-                // Update kindergarten ImagePath
+                // Ensure kindergarten ImagePath is set to the first image if empty
                 var kg = await _context.Kindergartens.FirstOrDefaultAsync(x => x.Id == domain.Id);
-                if (kg != null)
+                if (kg != null && string.IsNullOrWhiteSpace(kg.ImagePath))
                 {
-                    kg.ImagePath = $"/files/api/{path.Id}";
+                    var first = await _context.FileToApis
+                        .Where(x => x.KindergartenId == domain.Id)
+                        .OrderBy(x => x.CreatedAt)
+                        .FirstOrDefaultAsync();
+                    if (first != null)
+                    {
+                        kg.ImagePath = $"/files/api/{first.Id}";
+                    }
                 }
 
                 await _context.SaveChangesAsync();
