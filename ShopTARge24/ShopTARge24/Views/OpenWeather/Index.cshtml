@@ -1,0 +1,17 @@
+@{
+	ViewData["Title"] = "OpenWeather";
+}
+
+<h2>OpenWeather Forecast</h2>
+
+<form method="get" asp-action="Index">
+	<label for="city">Enter city:</label>
+	<input type="text" id="city" name="city" value="@ViewData["City"]" placeholder="Type a city..."/>
+	<button type="submit">Show Weather Info</button>
+</form>
+
+@if (ViewData["WeatherData"] != null)
+{
+	<p>@ViewData["WeatherData"]</p>
+}
+
