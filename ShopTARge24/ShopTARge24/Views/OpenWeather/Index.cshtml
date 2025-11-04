@@ -5,13 +5,29 @@
 <h2>OpenWeather Forecast</h2>
 
 <form method="get" asp-action="Index">
-	<label for="city">Enter city:</label>
-	<input type="text" id="city" name="city" value="@ViewData["City"]" placeholder="Type a city..."/>
-	<button type="submit">Show Weather Info</button>
+	<div class="mb-3">
+		<label for="city">Enter city:</label>
+		<input type="text" class="form-control" id="city" name="city" value="@ViewData["City"]" placeholder="Type a city..."/>
+	</div>
+	<div class="mb-3">
+		<button type="submit" class="btn btn-primary">Show Weather Info</button>
+	</div>
 </form>
 
 @if (ViewData["WeatherData"] != null)
 {
-	<p>@ViewData["WeatherData"]</p>
+	<div class="mt-3">
+		@{
+			var weatherInfo = ViewData["WeatherData"]?.ToString();
+			if (!string.IsNullOrEmpty(weatherInfo))
+			{
+				var parts = weatherInfo.Split('|');
+				foreach (var part in parts)
+				{
+					<p>@part.Trim()</p>
+				}
+			}
+		}
+	</div>
 }
 
