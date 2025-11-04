@@ -21,9 +21,13 @@ namespace ShopTARge24.ApplicationServices.Services
                 JObject json = JObject.Parse(response);
                 string cityName = json["name"]?.ToString();
                 double temp = json["main"]?["temp"]?.ToObject<double>() ?? 0;
+                double feelsLike = json["main"]?["feels_like"]?.ToObject<double>() ?? 0;
+                int humidity = json["main"]?["humidity"]?.ToObject<int>() ?? 0;
+                int pressure = json["main"]?["pressure"]?.ToObject<int>() ?? 0;
+                double windSpeed = json["wind"]?["speed"]?.ToObject<double>() ?? 0;
                 string weather = json["weather"]?[0]?["description"]?.ToString();
 
-                return $"City: {cityName} | Temperature: {temp:F1}°C | Weather: {weather}";
+                return $"City: {cityName} | Temperature: {temp:F2}°C | Temp Feels like: {feelsLike:F2}°C | Humidity: {humidity}% | Pressure: {pressure} Hpa | Wind Speed: {windSpeed:F2} Km/h | Weather Condition: {weather}";
             }
         }
     }
