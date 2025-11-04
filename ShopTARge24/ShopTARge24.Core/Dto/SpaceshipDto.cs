@@ -10,8 +10,7 @@ namespace ShopTARge24.Core.Dto
         public DateTime? BuiltDate { get; set; }
         public int? Crew { get; set; }
         public int? EnginePower { get; set; }
-
-        public List<IFormFile> Files { get; set; }
+        public List<IFormFile>? Files { get; set; }
         public IEnumerable<FileToApiDto> FileToApiDtos { get; set; }
             = new List<FileToApiDto>();
 

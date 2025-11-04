@@ -1,4 +1,4 @@
-﻿using ShopTARge24.Core.Domain;
+using ShopTARge24.Core.Domain;
 using ShopTARge24.Core.Dto;
 
 namespace ShopTARge24.Core.ServiceInterface
@@ -6,7 +6,10 @@ namespace ShopTARge24.Core.ServiceInterface
     public interface IFileServices
     {
         void FilesToApi(SpaceshipDto dto, Spaceships domain);
+        void FilesToApi(RealEstateDto dto, RealEstate domain);
+        Task FilesToApi(KindergartenDto dto, Kindergarten domain);
         Task<FileToApi> RemoveImageFromApi(FileToApiDto dto);
         Task<List<FileToApi>> RemoveImagesFromApi(FileToApiDto[] dtos);
+        void UploadFilesToDatabase(RealEstateDto dto, RealEstate realEstate);
     }
 }

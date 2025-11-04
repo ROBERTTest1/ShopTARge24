@@ -1,0 +1,163 @@
+@model ShopTARge24.Models.Kindergarten.KindergartenCreateUpdateViewModel
+
+@if (Model.Id.HasValue)
+{
+    <h1>Update</h1>
+}
+else
+{
+    <h1>Create</h1>
+}
+
+
+<div>
+    <form method="post" enctype="multipart/form-data" asp-action="@(Model.Id.HasValue ? "Update" : "Create")" asp-controller="Kindergarten">
+        <input asp-for="Id" type="hidden" />
+        <input asp-for="CreatedAt" type="hidden" />
+        <input asp-for="UpdatedAt" type="hidden" />
+
+        <div class="form-group row">
+            <label asp-for="GroupName" class="col-sm-2 col-form-label"></label>
+            <div class="col-sm-10">
+                <input asp-for="GroupName" class="form-control" />
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label asp-for="KindergartenName" class="col-sm-2 col-form-label"></label>
+            <div class="col-sm-10">
+                <input asp-for="KindergartenName" class="form-control" />
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label asp-for="ChildrenCount" class="col-sm-2 col-form-label"></label>
+            <div class="col-sm-10">
+                <input asp-for="ChildrenCount" class="form-control" />
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label asp-for="TeacherName" class="col-sm-2 col-form-label"></label>
+            <div class="col-sm-10">
+                <input asp-for="TeacherName" class="form-control" />
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Image</label>
+            <div class="col-sm-10">
+                <input asp-for="ImageFiles" class="form-control" type="file" accept="image/*" id="imageFiles" multiple />
+                <small class="form-text text-muted">You can select up to 3 images.</small>
+                <div id="fileList" class="mt-2"></div>
+                
+            </div>
+        </div>
+
+        @if (Model.ImageIds != null && Model.ImageIds.Any())
+        {
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Current Images</label>
+                <div class="col-sm-10">
+                    <div class="d-flex flex-wrap" style="gap:12px;">
+                        @for (int i = 0; i < Model.ImageIds.Count; i++)
+                        {
+                            var imgId = Model.ImageIds[i];
+                            var imgUrl = Model.ImagePaths != null && Model.ImagePaths.Count > i ? Model.ImagePaths[i] : $"/files/api/{imgId}";
+                            var title = Model.ImageTitles != null && Model.ImageTitles.Count > i ? Model.ImageTitles[i] : "Image";
+                            <div style="position: relative; display: inline-block;">
+                                <img src="@imgUrl" alt="@title" style="max-width:200px; border:1px solid #ddd; padding:2px; border-radius:4px;" />
+                                <button type="submit"
+                                        class="btn btn-sm btn-danger"
+                                        formmethod="post"
+                                        formaction="@Url.Action("DeleteImage", "Kindergarten")"
+                                        name="imageId"
+                                        value="@imgId"
+                                        onclick="return confirm('Delete this image?')"
+                                        style="position: absolute; top: 4px; right: 4px; font-size: 12px; padding: 2px 6px;">
+                                    ×
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        
+
+        @if (Model.Id.HasValue)
+        {
+            <button type="submit" class="btn btn-success">Update</button>
+        }
+        else
+        {
+            <button type="submit" class="btn btn-success">Create</button>
+        }
+
+        <a asp-action="Index" asp-controller="kindergarten" class="btn btn-success">Back</a>
+    </form>
+</div>
+
+<script>
+// ensure kindergartenId is posted when deleting image via button override
+document.addEventListener('click', function (e) {
+    if (e.target && e.target.matches('button[formaction*="DeleteImage"]')) {
+        // add hidden kindergartenId to the form before submit
+        const form = e.target.form;
+        if (form && !form.querySelector('input[name="kindergartenId"]')) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'kindergartenId';
+            input.value = document.querySelector('input[name="Id"]').value;
+            form.appendChild(input);
+        }
+    }
+});
+document.getElementById('imageFiles').addEventListener('change', function(e) {
+    const fileList = document.getElementById('fileList');
+    fileList.innerHTML = '';
+    
+    if (e.target.files.length > 0) {
+        const fileCount = document.createElement('p');
+        fileCount.textContent = `Selected ${e.target.files.length} file(s):`;
+        fileCount.className = 'text-success font-weight-bold';
+        fileList.appendChild(fileCount);
+        
+        let totalSize = 0;
+        Array.from(e.target.files).forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            const fileSizeKB = (file.size / 1024).toFixed(1);
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            const sizeText = file.size > 1024 * 1024 ? `${fileSizeMB} MB` : `${fileSizeKB} KB`;
+            
+            fileItem.textContent = `${index + 1}. ${file.name} (${sizeText})`;
+            fileItem.className = 'text-muted small';
+            fileList.appendChild(fileItem);
+            
+            totalSize += file.size;
+        });
+        
+        const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+        const totalSizeInfo = document.createElement('div');
+        totalSizeInfo.textContent = `Total size: ${totalSizeMB} MB`;
+        totalSizeInfo.className = 'text-info small mt-1';
+        fileList.appendChild(totalSizeInfo);
+        
+        if (e.target.files.length > 3) {
+            const warning = document.createElement('div');
+            warning.textContent = 'Warning: You selected more than 3 files. Only the first 3 will be uploaded.';
+            warning.className = 'text-warning small mt-1';
+            fileList.appendChild(warning);
+        }
+        
+        if (totalSize > 30 * 1024 * 1024) { // ~30MB total
+            const warning = document.createElement('div');
+            warning.textContent = 'Warning: Total file size is large. Upload may take a long time.';
+            warning.className = 'text-warning small mt-1';
+            fileList.appendChild(warning);
+        }
+    }
+});
+
+</script>
