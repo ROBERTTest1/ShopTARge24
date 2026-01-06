@@ -3,7 +3,7 @@
 var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
 //disable send button kuniks ühendus on loodud
-document.getElementById("sendButton").disable = true;
+document.getElementById("sendButton").disabled = true;
 
 connection.on("ReceiveMessage", function (user, message) {
   var li = document.createElement("li");
@@ -14,7 +14,7 @@ connection.on("ReceiveMessage", function (user, message) {
 connection
   .start()
   .then(function () {
-    document.getElementById("sendButton").disable = false;
+    document.getElementById("sendButton").disabled = false;
   })
   .catch(function (err) {
     return console.error(err.toString());

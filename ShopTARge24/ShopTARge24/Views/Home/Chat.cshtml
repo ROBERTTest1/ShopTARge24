@@ -1,4 +1,6 @@
-@page
+@{
+    ViewData["Title"] = "Chat";
+}
 
 <div class="container">
     <div class="row p-1">
@@ -25,4 +27,8 @@
         </div>
     </div>
 </div>
-<script src="~/js/microsoft/signalr/dist/browser/signalr.js"></script>
+
+@section Scripts {
+    <script src="~/js/microsoft/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/chat.js"></script>
+}
