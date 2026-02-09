@@ -6,3 +6,4 @@ namespace ShopTARge24.Core.ServiceInterface
     {
         void SendEmail(EmailDto dto);
     }
+}

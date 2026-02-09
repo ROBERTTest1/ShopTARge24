@@ -33,3 +33,4 @@ namespace ShopTARge24.ApplicationServices.Services
 
         }
     }
+}
